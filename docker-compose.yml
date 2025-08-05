@@ -5,6 +5,8 @@ services:
     image: redis:7
     ports:
       - "6379:6379"
+    networks:
+      - siteprotect-network
 
   backend:
     build: ./backend
@@ -12,6 +14,8 @@ services:
       - "3000:3000"
     depends_on:
       - redis
+    networks:
+      - siteprotect-network
 
   nginx:
     image: nginx:latest
@@ -22,3 +26,9 @@ services:
       - ./public:/usr/share/nginx/html:ro
     depends_on:
       - backend
+    networks:
+      - siteprotect-network
+
+networks:
+  siteprotect-network:
+    driver: bridge

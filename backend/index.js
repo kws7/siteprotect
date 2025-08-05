@@ -6,6 +6,8 @@ const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
+console.log('Starting SiteProtect backend...');
+
 const redisClient = redis.createClient({
   socket: {
     host: 'redis',
@@ -13,7 +15,12 @@ const redisClient = redis.createClient({
   }
 });
 
-redisClient.connect().catch(console.error);
+console.log('Connecting to Redis...');
+redisClient.connect().then(() => {
+  console.log('Successfully connected to Redis');
+}).catch((err) => {
+  console.error('Failed to connect to Redis:', err);
+});
 
 app.use(bodyParser.json());
 
@@ -130,6 +137,13 @@ app.get('/admin/api/stats', async (req, res) => {
     }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.listen(port, () => {
-    console.log(`Backend listening on port ${port}`);
+    console.log(`✅ Backend listening on port ${port}`);
+    console.log(`📊 Admin dashboard: http://localhost:${port}/admin/`);
+    console.log(`🔍 Health check: http://localhost:${port}/health`);
 });
