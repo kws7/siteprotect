@@ -86,10 +86,13 @@ app.get('/admin/', (req, res) => {
 
 // Admin API endpoint to get statistics
 app.get('/admin/api/stats', async (req, res) => {
+    console.log('📊 Admin API stats request received');
     try {
         // Get all fingerprint keys
         const fingerprintKeys = await redisClient.keys('fingerprint:*');
         const statsKeys = await redisClient.keys('stats:*');
+        
+        console.log(`🔍 Found ${fingerprintKeys.length} fingerprint keys and ${statsKeys.length} stats keys`);
         
         const fingerprints = [];
         const ipStats = [];
@@ -125,21 +128,33 @@ app.get('/admin/api/stats', async (req, res) => {
         fingerprints.sort((a, b) => b.visitCount - a.visitCount);
         ipStats.sort((a, b) => b.totalHits - a.totalHits);
         
-        res.json({
+        const response = {
             fingerprints,
             ipStats,
             totalVisitors: fingerprints.length,
             totalIPs: ipStats.length
-        });
+        };
+        
+        console.log(`✅ Sending admin stats: ${fingerprints.length} visitors, ${ipStats.length} IPs`);
+        res.json(response);
     } catch (err) {
-        console.error('Error getting admin data:', err);
-        res.status(500).json({ error: 'Failed to get statistics' });
+        console.error('❌ Error getting admin data:', err);
+        res.status(500).json({ error: 'Failed to get statistics', details: err.message });
     }
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Test API endpoint
+app.get('/api/test', (req, res) => {
+    res.json({ 
+        status: 'backend_working', 
+        timestamp: new Date().toISOString(),
+        message: 'Backend API is responding correctly'
+    });
 });
 
 app.listen(port, () => {
