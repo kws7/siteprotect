@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FingerprintJS Example</title>
+</head>
+<body>
+  <h1>Your Fingerprint:</h1>
+  <p id="fp-output">Loading...</p>
+  <p id="fp-count"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+  <script>
+    (async () => {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      const visitorId = result.visitorId;
+
+      // Show the fingerprint on the page
+      document.getElementById('fp-output').textContent = visitorId;
+
+      // Send to backend
+      fetch("/__fp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ visitorId, timestamp: Date.now() })
+      })
+      .then(response => response.text())
+      .then(text => {
+          document.getElementById('fp-count').textContent = text;
+      })
+      .catch(err => {
+          document.getElementById('fp-count').textContent = 'Error contacting backend';
+          console.error(err);
+      });
+    })();
+  </script>
+</body>
+</html>
